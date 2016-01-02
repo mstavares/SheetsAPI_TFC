@@ -23,6 +23,8 @@ import com.google.android.gms.common.api.Status;
 import com.google.gdata.client.spreadsheet.SpreadsheetService;
 import com.google.gdata.data.spreadsheet.SpreadsheetEntry;
 import com.google.gdata.data.spreadsheet.SpreadsheetFeed;
+import com.google.gdata.data.spreadsheet.WorksheetEntry;
+import com.google.gdata.data.spreadsheet.WorksheetFeed;
 
 import java.net.URL;
 import java.util.List;
@@ -57,9 +59,17 @@ public class MainActivity extends AppCompatActivity implements
     */
     public static SpreadsheetService service;
     /*
-    Aqui vamos guardar a referencia para a folha onde vamos trabalhar
+    Aqui vamos guardar a referencia para as folhas onde vamos trabalhar. Utilizado para folhas privadas
     */
     public static SpreadsheetEntry folhas = null;
+    /*
+    Aqui guardamos a referencia para uma folha de calculo. Utilizado para folhas publicas
+    */
+    public static WorksheetEntry folha = null;
+    /*
+    Nome da folha com que estamos a trabalhar. Este nome está nas tabs das folhas de calculo.
+    */
+    private static String nomeDaFolha = "Folha";
     /*
     Estes dois objetos servem para fazer a autenticação no drive.
     Um faz a autenticação o outro guarda os dados relativos à conta Google.
@@ -110,6 +120,11 @@ public class MainActivity extends AppCompatActivity implements
         return folhas;
     }
 
+    // Devolve a folha que estamos a trabalhar.
+    public static WorksheetEntry getFolha() {
+        return folha;
+    }
+
     // onClick associado ao botao de login
     @Override
     public void onClick(View v) {
@@ -144,7 +159,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     // Faz logout da conta google e volta ao ecra de autenticação
-    public static void signOutFromGplus() {
+    protected static void signOutFromGplus() {
         token = null;
         Auth.GoogleSignInApi.revokeAccess(mGoogleApiClient).setResultCallback(
                 new ResultCallback<Status>() {
@@ -155,13 +170,12 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void getGoogleOAuthTokenAndLogin() {
-        // Get OAuth token in Background
         AsyncTask<Void, Void, String> task = new AsyncTask<Void, Void, String>() {
 
             /*
              É executado antes do doInBackground
              Vai mostrar o loading até que a autenticação acabe.
-              */
+             */
             @Override
             protected void onPreExecute() {
                 dialog = new ProgressDialog(context);
@@ -176,16 +190,41 @@ public class MainActivity extends AppCompatActivity implements
             protected String doInBackground(Void... params) {
                 try {
                     boolean autenticado = false;
-                    URL SPREADSHEET_FEED_URL = new URL("https://spreadsheets.google.com/feeds/spreadsheets/private/full");
+
+                    // Usar este para folhas privadas
+                    //URL SPREADSHEET_FEED_URL = new URL("https://spreadsheets.google.com/feeds/spreadsheets/private/full");
+
+                    // Usar este para folhas publicas
+                    URL SPREADSHEET_FEED_URL = new URL("https://spreadsheets.google.com/feeds/worksheets/"+ KEY_FOLHA +"/private/full");
+
                     String scope = "oauth2:https://spreadsheets.google.com/feeds";
                     token = GoogleAuthUtil.getToken(MainActivity.this, conta.getEmail(), scope);
                     service = new SpreadsheetService("MySpreadsheetIntegration-v3");
                     service.setHeader("Authorization", "Bearer " + token);
-                    SpreadsheetFeed feed = service.getFeed(SPREADSHEET_FEED_URL, SpreadsheetFeed.class);
 
-					/* Se a autenicação foi efetuada com sucesso, vai procurar no drive a folha que queremos.
-					   A folha que queremos tem a nossa Key
-					*/
+                ///////////////////////////////////////////////////////////////////////////////////
+                /*
+                    Esta Parte é a que devemos utilizar para as folhas publicas
+                */
+
+                    WorksheetFeed feed = service.getFeed(SPREADSHEET_FEED_URL, WorksheetFeed.class);
+                    List<WorksheetEntry> worksheets = feed.getEntries();
+                    for (WorksheetEntry worksheet : worksheets)
+                            if(worksheet.getTitle().getPlainText().equals(nomeDaFolha)) {
+                                folha = worksheet;
+                                autenticado = true;
+                                break;
+                            }
+
+                    if (!autenticado || folha == null)
+                        token = null;
+
+                ///////////////////////////////////////////////////////////////////////////////////
+                /*
+                    Esta parte é a que devemos utilizar para as folhas privadas
+                */
+                /*
+                    SpreadsheetFeed feed = service.getFeed(SPREADSHEET_FEED_URL, SpreadsheetFeed.class);
                     List<SpreadsheetEntry> spreadsheets = feed.getEntries();
                     for (SpreadsheetEntry spreadsheet : spreadsheets) {
                         if (spreadsheet.getKey().equals(KEY_FOLHA)) {
@@ -195,8 +234,10 @@ public class MainActivity extends AppCompatActivity implements
                         }
                     }
 
-                    if (!autenticado && folhas != null)
+                    if (!autenticado || folhas == null)
                         token = null;
+
+                */
 
                 } catch (UserRecoverableAuthException transientEx) {
                     startActivityForResult(transientEx.getIntent(), AUTH_CODE_REQUEST_CODE);
@@ -209,7 +250,7 @@ public class MainActivity extends AppCompatActivity implements
             // É executado depois do doInBackground
             @Override
             protected void onPostExecute(String token) {
-                if(token != null) {
+                if(token != null ) {
                     startActivity(new Intent(context, Main2Activity.class));
                     finish();
                 } else {

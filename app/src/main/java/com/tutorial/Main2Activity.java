@@ -4,12 +4,9 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.gdata.data.spreadsheet.CellEntry;
 import com.google.gdata.data.spreadsheet.CellFeed;
@@ -22,7 +19,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 
-public class Main2Activity extends AppCompatActivity {
+public class Main2Activity extends MainActivity {
 
     private static final int LINHA_DA_CELULA_A1 = 1;
     private static final int COLUNA_DA_CELULA_A1 = 1;
@@ -50,7 +47,9 @@ public class Main2Activity extends AppCompatActivity {
     }
 
     public void btnLogout_onClick (View view) {
-        MainActivity.signOutFromGplus();
+        signOutFromGplus();
+        startActivity(new Intent(context, MainActivity.class));
+        finish();
     }
 
     private static String restringeLinhasEColunas(int linhaMin, int linhaMax, int ColunaMin, int ColunaMax) {
@@ -76,6 +75,7 @@ public class Main2Activity extends AppCompatActivity {
             protected String doInBackground(Void... params) {
                 CellFeed feedCell;
                 try {
+/*
                     for (WorksheetEntry worksheet : MainActivity.getFolhas().getWorksheets())
                         if (worksheet.getTitle().getPlainText().contains("Folha publica TFC")) {
                             folhaEscolhida = worksheet;
@@ -86,8 +86,15 @@ public class Main2Activity extends AppCompatActivity {
                                 COLUNA_DA_CELULA_A1, COLUNA_DA_CELULA_A1)).toURL();
                         feedCell = MainActivity.service.getFeed(feedURL, CellFeed.class);
                         celulasLidas = feedCell.getEntries();
-
                     }
+
+*/
+                    folhaEscolhida = MainActivity.getFolha();
+                    feedURL = new URI(folhaEscolhida.getCellFeedUrl().toString() + restringeLinhasEColunas(LINHA_DA_CELULA_A1, LINHA_DA_CELULA_A1,
+                        COLUNA_DA_CELULA_A1, COLUNA_DA_CELULA_A1)).toURL();
+                    feedCell = MainActivity.service.getFeed(feedURL, CellFeed.class);
+                    celulasLidas = feedCell.getEntries();
+
                 } catch (IOException e) {
                     e.printStackTrace();
                 } catch (ServiceException e) {
@@ -100,10 +107,18 @@ public class Main2Activity extends AppCompatActivity {
 
             @Override
             protected void onPostExecute(String result) {
-                if(ler)
+                if (ler)
                     lerDaCelula(celulasLidas);
-                else
-                    escreverNaCelula(feedURL, LINHA_DA_CELULA_A1, COLUNA_DA_CELULA_A1);
+                else {
+                    AsyncTask<Void, Void, String> task = new AsyncTask<Void, Void, String>() {
+                        @Override
+                        protected String doInBackground(Void... params) {
+                            escreverNaCelula(feedURL, LINHA_DA_CELULA_A1, COLUNA_DA_CELULA_A1);
+                            return "sucesso";
+                        }
+                    };
+                    task.execute();
+                }
                 dialog.dismiss();
             }
         };
