@@ -1,5 +1,6 @@
 package com.tutorial;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -34,6 +35,10 @@ public class MainActivity extends AppCompatActivity implements
      */
     private static Context context;
     /*
+    Vai mostrar uma especie de loading. Para não bloquear o ecrã ao utilizador.
+     */
+    ProgressDialog dialog;
+    /*
     Pode ser um numero qualquer, escolhei o 1.
     */
     private static final int AUTH_CODE_REQUEST_CODE = 1;
@@ -54,7 +59,7 @@ public class MainActivity extends AppCompatActivity implements
     /*
     Aqui vamos guardar a referencia para a folha onde vamos trabalhar
     */
-    public static SpreadsheetEntry folha = null;
+    public static SpreadsheetEntry folhas = null;
     /*
     Estes dois objetos servem para fazer a autenticação no drive.
     Um faz a autenticação o outro guarda os dados relativos à conta Google.
@@ -100,6 +105,11 @@ public class MainActivity extends AppCompatActivity implements
         return service;
     }
 
+    // Devolve as folhas contidas no drive
+    public static SpreadsheetEntry getFolhas() {
+        return folhas;
+    }
+
     // onClick associado ao botao de login
     @Override
     public void onClick(View v) {
@@ -134,7 +144,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     // Faz logout da conta google e volta ao ecra de autenticação
-    protected void signOutFromGplus() {
+    public static void signOutFromGplus() {
         token = null;
         Auth.GoogleSignInApi.revokeAccess(mGoogleApiClient).setResultCallback(
                 new ResultCallback<Status>() {
@@ -147,6 +157,19 @@ public class MainActivity extends AppCompatActivity implements
     private void getGoogleOAuthTokenAndLogin() {
         // Get OAuth token in Background
         AsyncTask<Void, Void, String> task = new AsyncTask<Void, Void, String>() {
+
+            /*
+             É executado antes do doInBackground
+             Vai mostrar o loading até que a autenticação acabe.
+              */
+            @Override
+            protected void onPreExecute() {
+                dialog = new ProgressDialog(context);
+                dialog.setMessage("A autenticar...");
+                dialog.setIndeterminate(true);
+                dialog.setCanceledOnTouchOutside(false);
+                dialog.show();
+            }
 
             // Tenta autenticar no Drive. Se conseguir devolve um token != null
             @Override
@@ -166,13 +189,13 @@ public class MainActivity extends AppCompatActivity implements
                     List<SpreadsheetEntry> spreadsheets = feed.getEntries();
                     for (SpreadsheetEntry spreadsheet : spreadsheets) {
                         if (spreadsheet.getKey().equals(KEY_FOLHA)) {
-                            folha = spreadsheet;
+                            folhas = spreadsheet;
                             autenticado = true;
                             break;
                         }
                     }
 
-                    if (!autenticado && folha != null)
+                    if (!autenticado && folhas != null)
                         token = null;
 
                 } catch (UserRecoverableAuthException transientEx) {
@@ -192,6 +215,7 @@ public class MainActivity extends AppCompatActivity implements
                 } else {
                     Toast.makeText(MainActivity.this, "Ocorreu uma erro durante a autenticaçao.", Toast.LENGTH_LONG);
                 }
+                dialog.dismiss();
             }
         };
         task.execute();
