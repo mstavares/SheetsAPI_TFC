@@ -188,6 +188,7 @@ public class MainActivity extends AppCompatActivity implements
             protected void onPostExecute(String token) {
                 if(token != null) {
                     startActivity(new Intent(context, Main2Activity.class));
+                    finish();
                 } else {
                     Toast.makeText(MainActivity.this, "Ocorreu uma erro durante a autenticaçao.", Toast.LENGTH_LONG);
                 }
