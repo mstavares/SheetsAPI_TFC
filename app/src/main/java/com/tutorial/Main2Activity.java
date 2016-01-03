@@ -75,9 +75,15 @@ public class Main2Activity extends MainActivity {
             protected String doInBackground(Void... params) {
                 CellFeed feedCell;
                 try {
+
+                    ///////////////////////////////////////////////////////////////////////////////////
+                /*
+                    Esta parte é a que devemos utilizar para as folhas privadas
+                */
 /*
+                    // o contains ten de ter o nome da folha privada que vamos ler
                     for (WorksheetEntry worksheet : MainActivity.getFolhas().getWorksheets())
-                        if (worksheet.getTitle().getPlainText().contains("Folha publica TFC")) {
+                        if (worksheet.getTitle().getPlainText().contains("Folha")) {
                             folhaEscolhida = worksheet;
                             break;
                         }
@@ -87,13 +93,18 @@ public class Main2Activity extends MainActivity {
                         feedCell = MainActivity.service.getFeed(feedURL, CellFeed.class);
                         celulasLidas = feedCell.getEntries();
                     }
-
 */
+                 ///////////////////////////////////////////////////////////////////////////////////
+                /*
+                    Esta Parte é a que devemos utilizar para as folhas publicas
+                */
+
                     folhaEscolhida = MainActivity.getFolha();
                     feedURL = new URI(folhaEscolhida.getCellFeedUrl().toString() + restringeLinhasEColunas(LINHA_DA_CELULA_A1, LINHA_DA_CELULA_A1,
                         COLUNA_DA_CELULA_A1, COLUNA_DA_CELULA_A1)).toURL();
                     feedCell = MainActivity.service.getFeed(feedURL, CellFeed.class);
                     celulasLidas = feedCell.getEntries();
+
 
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -107,17 +118,19 @@ public class Main2Activity extends MainActivity {
 
             @Override
             protected void onPostExecute(String result) {
-                if (ler)
-                    lerDaCelula(celulasLidas);
-                else {
-                    AsyncTask<Void, Void, String> task = new AsyncTask<Void, Void, String>() {
-                        @Override
-                        protected String doInBackground(Void... params) {
-                            escreverNaCelula(feedURL, LINHA_DA_CELULA_A1, COLUNA_DA_CELULA_A1);
-                            return "sucesso";
-                        }
-                    };
-                    task.execute();
+                if (folhaEscolhida != null) {
+                    if (ler)
+                        lerDaCelula(celulasLidas);
+                    else {
+                        AsyncTask<Void, Void, String> task = new AsyncTask<Void, Void, String>() {
+                            @Override
+                            protected String doInBackground(Void... params) {
+                                escreverNaCelula(feedURL, LINHA_DA_CELULA_A1, COLUNA_DA_CELULA_A1);
+                                return "sucesso";
+                            }
+                        };
+                        task.execute();
+                    }
                 }
                 dialog.dismiss();
             }

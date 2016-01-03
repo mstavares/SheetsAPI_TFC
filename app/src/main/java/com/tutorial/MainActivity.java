@@ -223,11 +223,11 @@ public class MainActivity extends AppCompatActivity implements
                 /*
                     Esta parte é a que devemos utilizar para as folhas privadas
                 */
-                /*
+/*
                     SpreadsheetFeed feed = service.getFeed(SPREADSHEET_FEED_URL, SpreadsheetFeed.class);
                     List<SpreadsheetEntry> spreadsheets = feed.getEntries();
                     for (SpreadsheetEntry spreadsheet : spreadsheets) {
-                        if (spreadsheet.getKey().equals(KEY_FOLHA)) {
+                        if (spreadsheet.getKey().equals("1vgSF2baarOk17Ox-pMmjDmsWtHFqdEUxYCzfY9KMcPg")) {
                             folhas = spreadsheet;
                             autenticado = true;
                             break;
@@ -236,8 +236,7 @@ public class MainActivity extends AppCompatActivity implements
 
                     if (!autenticado || folhas == null)
                         token = null;
-
-                */
+*/
 
                 } catch (UserRecoverableAuthException transientEx) {
                     startActivityForResult(transientEx.getIntent(), AUTH_CODE_REQUEST_CODE);
