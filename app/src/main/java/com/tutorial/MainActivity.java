@@ -216,8 +216,10 @@ public class MainActivity extends AppCompatActivity implements
                                 break;
                             }
 
-                    if (!autenticado || folha == null)
+                    if (!autenticado || folha == null) {
                         token = null;
+                    }
+
 
                 ///////////////////////////////////////////////////////////////////////////////////
                 /*
@@ -234,8 +236,9 @@ public class MainActivity extends AppCompatActivity implements
                         }
                     }
 
-                    if (!autenticado || folhas == null)
+                    if (!autenticado || folhas == null) {
                         token = null;
+                    }
 */
 
                 } catch (UserRecoverableAuthException transientEx) {

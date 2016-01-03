@@ -119,9 +119,9 @@ public class Main2Activity extends MainActivity {
             @Override
             protected void onPostExecute(String result) {
                 if (folhaEscolhida != null) {
-                    if (ler)
+                    if (ler) {
                         lerDaCelula(celulasLidas);
-                    else {
+                    } else {
                         AsyncTask<Void, Void, String> task = new AsyncTask<Void, Void, String>() {
                             @Override
                             protected String doInBackground(Void... params) {
