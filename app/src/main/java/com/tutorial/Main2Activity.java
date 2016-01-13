@@ -81,9 +81,9 @@ public class Main2Activity extends MainActivity {
                     Esta parte é a que devemos utilizar para as folhas privadas
                 */
 /*
-                    // o contains ten de ter o nome da folha privada que vamos ler
+                    // vamos pesquisar a folha que queremos dentro do book
                     for (WorksheetEntry worksheet : MainActivity.getFolhas().getWorksheets())
-                        if (worksheet.getTitle().getPlainText().contains("Folha")) {
+                        if (worksheet.getTitle().getPlainText().equals("Folha")) {
                             folhaEscolhida = worksheet;
                             break;
                         }
